@@ -22,7 +22,7 @@ void init_ultrasound(SharedVariable* sv) {
 	//code here
 }
 
-void body_ultrasound(void)
+void body_ultrasound(SharedVariable* sv)
 {
 struct timeval tv,tve;
 struct timezone tz;
