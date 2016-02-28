@@ -65,7 +65,8 @@ break;
 }
 usec = tve.tv_usec - tv.tv_usec;
 usec = usec/58;
-printf("%f\n",usec);
+if((usec>5)&&(usec<30))
+printf("US 0 %f:\n",usec);
 
 digitalWrite (TRIGPIN1,0) ; //LOW
 delayMicroseconds(2);
@@ -88,7 +89,8 @@ break;
 }
 usec = tve.tv_usec - tv.tv_usec;
 usec = usec/58;
-printf("%f\n",usec);
+if((usec>5)&&(usec<30))
+printf("US 1 %f:\n",usec);
 
 
 digitalWrite (TRIGPIN2,0) ; //LOW
@@ -112,7 +114,8 @@ break;
 }
 usec = tve.tv_usec - tv.tv_usec;
 usec = usec/58;
-printf("%f\n",usec);
+if((usec>5)&&(usec<30))
+printf("US 2 %f:\n",usec);
 
 
 digitalWrite (TRIGPIN3,0) ; //LOW
@@ -136,7 +139,8 @@ break;
 }
 usec = tve.tv_usec - tv.tv_usec;
 usec = usec/58;
-printf("%f\n",usec);
+if((usec>5)&&(usec<30))
+printf("US 3 %f:\n",usec);
 
 
 digitalWrite (TRIGPIN4,0) ; //LOW
@@ -160,7 +164,8 @@ break;
 }
 usec = tve.tv_usec - tv.tv_usec;
 usec = usec/58;
-printf("%f\n",usec);
+if((usec>5)&&(usec<30))
+printf("US 4: %f \n",usec);
 
 
 return 0;

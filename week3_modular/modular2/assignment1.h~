@@ -1,0 +1,45 @@
+#ifndef _ASSIGNMENT_BODY_
+#define _ASSIGNMENT_BODY_
+
+#define LEFT_LED 1
+#define RIGHT_LED 4
+#define FRONT_LED 5
+
+#define US_1_ECHO 6
+#define US_1_TRIG 7
+#define US_2_ECHO 8
+#define US_2_TRIG 9
+#define US_3_ECHO 9
+#define US_3_TRIG 9
+#define US_4_ECHO 9
+#define US_4_TRIG 9
+#define US_5_ECHO 9
+#define US_5_TRIG 9
+
+#define DRIVE_FORWARD 1
+#define TURN_RIGHT 2
+#define TURN_LEFT 3
+#define OBSTACLE_DETECTED 4
+#define STOP_WAIT 5
+ 
+typedef struct shared_variable {
+	int bProgramExit; // Once it is set to 1, the program will be terminated.
+	int right_led,left_led,front_led;
+	//int us1,us2,us3,us4,us5;
+	int drive_state;
+	int init_start;
+} SharedVariable;
+
+void init_shared_variable(SharedVariable* sv);
+void init_sensors(SharedVariable* sv);
+
+void body_ultrasound(SharedVariable* sv);
+void body_irled(SharedVariable* sv);
+void body_temp(SharedVariable* sv);
+void body_track(SharedVariable* sv);
+void body_shock(SharedVariable* sv);
+void body_rgbcolor(SharedVariable* sv);
+void body_aled(SharedVariable* sv);
+void body_buzzer(SharedVariable* sv);
+
+#endif
