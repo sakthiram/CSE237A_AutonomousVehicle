@@ -136,8 +136,11 @@ char initsafe[] = {128, 131};
 char initfull[] = {128, 132};  
 
 int wd;
+
 //wd = write(fd, initsafe, 8);
 
+wd = write(fd, initfull, 8);
+wd = write(fd, initfull, 8);
 wd = write(fd, initfull, 8);
 sv->current_direction = STOP;
 }
@@ -145,10 +148,11 @@ sv->current_direction = STOP;
 void forward(SharedVariable* sv) {
 char forward[] = {137, 0, 100, 128, 0 };
 int wd;
-if(sv->current_direction != FORWARD) {
+//if(sv->current_direction != FORWARD) {
+		printf("FORWARD Entered\n");
 wd =  write(fd, forward, 8);
-printf("Direction changed to forward\n");
-}
+		printf("FORWARD Written\n");
+//}
 sv->current_direction = FORWARD;
 }
 
@@ -156,8 +160,10 @@ void reverse(SharedVariable* sv) {
 char reverse[] = {137, 255, 100, 128, 0 };
 int wd;
 if(sv->current_direction != REVERSE) {
+		printf("REVERSE Entered\n");
 wd =  write(fd, reverse, 8);
-printf("Direction changed to reverse\n");
+		printf("REVERSE Written\n");
+
 }
 sv->current_direction = REVERSE;
 }
@@ -166,8 +172,9 @@ void left(SharedVariable* sv) {
 char left[] = {137, 0, 100, 0, 1 };
 int wd;
 if(sv->current_direction != LEFT) {
+		printf("LEFT Entered\n");
 wd =  write(fd, left, 8);
-printf("Direction changed to left");
+		printf("LEFT Written\n");
 }
 sv->current_direction = LEFT;
 }
@@ -176,8 +183,9 @@ void right(SharedVariable* sv) {
 char right[] = {137, 0, 100, 255, 255 }; 
 int wd;
 if(sv->current_direction != RIGHT){
+		printf("RIGHT Entered\n");
 wd =  write(fd, right, 8);
-printf("Direction changed to right");
+		printf("RIGHT Written\n");
 }
 sv->current_direction = RIGHT;
 }

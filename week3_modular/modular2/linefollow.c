@@ -121,10 +121,87 @@ void body_linefollow(SharedVariable* sv){
 		  	
 	  switch(sv->drive_state){
 		case DRIVE_FORWARD:
-			drive_forward(sv);
+	if(!sv->right_led && !sv->left_led)
+	{
+		//printf("Forward");
+		forward(sv);
+		//delay(1000);	
+	}	
+	if(sv->right_led) //right is off implies both scenarios where left and right both are off
+	{
+		
+		while(sv->right_led){		
+			left(sv);
+			delay(50);
+			forward(sv);
+			delay(100);
+		}
+		right(sv);
+		delay(33);
+		forward(sv);	
+	}
+	if(sv->left_led) 
+	{
+		while(sv->left_led){		
+			right(sv);
+			delay(50);
+			forward(sv);
+			delay(100);
+		}
+		left(sv);
+		delay(33);
+		forward(sv);
+			
+	}				
+			//drive_forward(sv);
 			break;
 		case TURN_RIGHT:	
-			turn_right(sv);
+		printf("ENtered turn right\n");
+		while(sv->left_led != 1 || sv->right_led != 1)
+		{	forward(sv);			
+			delay(50);		
+		}	
+		if (sv->right_led == 1) {
+			while (sv->left_led != 1)
+				{right(sv);
+				 delay(300);}		
+		}	
+		printf("before while\n");
+		while(sv->left_led == 1)		
+		{	right(sv);
+			delay(50);	
+		}		
+		printf("after while\n");
+		while(sv->left_led != 1 && sv->front_led != 1) 
+		{	forward(sv);
+			delay(50);		
+		}		
+		printf("after forward\n");
+		if (sv->front_led == 1) {
+			while (sv->left_led != 1) 
+				{right(sv);
+				  delay(50);}
+			printf("left led on\n");
+		}
+
+		//if(sv->left_led == 1) {
+		        //long startTime = micros();
+			while (sv->left_led == 1) 
+				{right(sv);
+				  //delay(50);
+				}	
+			printf("left led off\n");
+			//long rotateTime = micros() - startTime;
+			//printf("rotate time is %d\n",rotateTime);
+			//forward(sv);
+			//delay(1000);
+			//printf("turning left");
+			//left(sv);
+			//printf("left turned");			
+			//delay(1000);
+			//stop(sv);
+		//}
+		//	turn_right(sv);
 			break;
 		case TURN_LEFT:	
 			turn_left(sv);
@@ -184,8 +261,10 @@ void body_keypress(SharedVariable* sv)
 void drive_forward(SharedVariable* sv)
 {
 	if(!sv->right_led && !sv->left_led)
-	{	forward(sv);
-		delay(50);	
+	{
+		//printf("Forward");
+		forward(sv);
+		//delay(1000);	
 	}	
 	if(sv->right_led) //right is off implies both scenarios where left and right both are off
 	{
@@ -225,7 +304,7 @@ void turn_right(SharedVariable* sv)
 		if (sv->right_led == 1) {
 			while (sv->left_led != 1)
 				{right(sv);
-				 delay(50);}		
+				 delay(300);}		
 		}	
 		printf("before while\n");
 		while(sv->left_led == 1)		
@@ -254,11 +333,11 @@ void turn_right(SharedVariable* sv)
 			//long rotateTime = micros() - startTime;
 			//printf("rotate time is %d\n",rotateTime);
 			forward(sv);
-			delay(50);
+			delay(1000);
 			printf("turning left");
 			left(sv);
 			printf("left turned");			
-			delay(100);
+			delay(1000);
 			//stop(sv);
 		//}
 		
