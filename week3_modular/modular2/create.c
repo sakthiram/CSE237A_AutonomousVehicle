@@ -147,7 +147,9 @@ char forward[] = {137, 0, 100, 128, 0 };
 int wd;
 if(sv->current_direction != FORWARD) {
 wd =  write(fd, forward, 8);
+if(wd)
 printf("Direction changed to forward\n");
+else printf("write problem");
 }
 sv->current_direction = FORWARD;
 }

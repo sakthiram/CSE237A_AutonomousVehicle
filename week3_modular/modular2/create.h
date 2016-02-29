@@ -32,7 +32,7 @@ typedef struct shared_variable {
 	int bProgramExit; // Once it is set to 1, the program will be terminated.
 	int right_led,left_led,front_led;
 	//int us1,us2,us3,us4,us5;
-	int drive_state;
+	int drive_state, obstacle_detected,next_lane_obstacle_detected, current_lane;
 	int init_start,manual_stop;
 	int current_direction;
 } SharedVariable;

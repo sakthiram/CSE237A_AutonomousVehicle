@@ -10,7 +10,7 @@ void init_shared_variable(SharedVariable* sv) {
 	sv->init_start = 0;
 	sv->manual_stop = 0;
 	sv->current_direction = STOP;
-	turn = 1;	
+	turn = 2;	
 }
 
 void init_sensors(SharedVariable* sv) {
@@ -204,7 +204,27 @@ void body_linefollow(SharedVariable* sv){
 		//	turn_right(sv);
 			break;
 		case TURN_LEFT:	
-			turn_left(sv);
+			while(sv->left_led != 1 && sv->right_led != 1)
+				forward(sv);			
+
+			while(sv->front_led != 1)
+				forward(sv);			
+
+			while(sv->left_led != 1 && sv->right_led != 1)
+				forward(sv);			
+
+			while(sv->left_led == 1 && sv->right_led == 1)		
+				left(sv);
+
+			while(sv->right_led != 1 && sv->front_led != 1) 
+				forward(sv);
+		
+			if (sv->front_led == 1) {
+				while (sv->right_led != 1) 
+					left(sv);
+			}
+	
+			//turn_left(sv);
 			break;
 		case OBSTACLE_DETECTED:	
 			lane_change(sv);
