@@ -187,9 +187,9 @@ sv->current_direction = RIGHT;
 void stop(SharedVariable* sv) {
 char stop[] = {137, 0, 0, 0, 0 }; 
 int wd;
+if(sv->current_direction != STOP) {
 		printf("STOP Entered\n");
-if(sv->current_direction != STOP)
-{wd =  write(fd, stop, 8);
+wd =  write(fd, stop, 8);
 		printf("STOP Written\n");
 }
 sv->current_direction = STOP;
