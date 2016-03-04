@@ -3,34 +3,32 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <stdint.h>
+#include <strings.h>
+
+int uturn_done;
 
 void init_shared_variable(SharedVariable* sv) {
 	sv->bProgramExit = 0;
 	sv->drive_state = STOP_WAIT;
 	sv->init_start = 0;
-	sv->manual_stop = 0;
+	sv->manual_stop = 1;
 	sv->current_direction = STOP;
 	sv->obstacle_detected = 0;
 	sv->next_lane_obstacle_detected =0;
 	sv->current_lane = 1;
-	turn = 2;	
+	bzero(sv->directions,10);
+	sv->turn = 0;
+	sv->turn_count = 0;
+	uturn_done = 0;
+		
 }
 
 void init_sensors(SharedVariable* sv) {
 	pinMode(LEFT_LED, INPUT);
 	pinMode(RIGHT_LED, INPUT);
 	pinMode(FRONT_LED, INPUT);
-/*	pinMode(US_1_ECHO, INPUT);
-	pinMode(US_1_TRIG, OUTPUT);
-	pinMode(US_2_ECHO, INPUT);
-	pinMode(US_2_TRIG, OUTPUT);
-	pinMode(US_3_ECHO, INPUT);
-	pinMode(US_3_TRIG, OUTPUT);
-	pinMode(US_4_ECHO, INPUT);
-	pinMode(US_4_TRIG, OUTPUT);
-	pinMode(US_5_ECHO, INPUT);
-	pinMode(US_5_TRIG, OUTPUT);
-*/
+	pinMode(COLOR_DET0, INPUT);
+	pinMode(COLOR_DET1, INPUT);
 }
 void setup_US(int TRIG, int ECHO){
 	pinMode(TRIG, INPUT);
@@ -79,17 +77,10 @@ void body_ultrasound(SharedVariable* sv) {
 	dist_3 = getCM(US_3_TRIG,US_3_ECHO);
 	dist_4 = getCM(US_4_TRIG,US_4_ECHO); 
 	dist_5 = getCM(US_5_TRIG,US_5_ECHO); 
-	if((dist_3>2 && dist_3<15))
-	{
-		printf("Obstacle detected\n");
-		sv->obstacle_detected = 1;	
-	
-	} else {
-		sv->obstacle_detected = 0;	
-	}
+
 
 	if(sv->current_lane == 0) {
-	if((dist_4>18 && dist_4<60) || (dist_5>5 && dist_5<30))
+	if((dist_4>5 && dist_4<60) || (dist_5>5 && dist_5<30))
 	{
 			sv->next_lane_obstacle_detected = 1;
 			printf("rightlane obstacle\n");
@@ -99,7 +90,7 @@ void body_ultrasound(SharedVariable* sv) {
 	}
 
 	if(sv->current_lane == 1){
-	if((dist_2>18 && dist_2<60) || (dist_1>5 && dist_1<30))
+	if((dist_2>5 && dist_2<60) || (dist_1>5 && dist_1<30))
 	{	
 			sv->next_lane_obstacle_detected = 1;
 			printf("leftlane obstacle\n");
@@ -108,7 +99,17 @@ void body_ultrasound(SharedVariable* sv) {
 	}
 	}
 
+	if((dist_3>2 && dist_3<15))
+	{
+		printf("Obstacle detected\n");
+		sv->obstacle_detected = 1;	
+	
+	} else {
+		sv->obstacle_detected = 0;	
 	}
+
+	}
+
 }
 void body_irled(SharedVariable* sv) {
 	while(1){
@@ -129,13 +130,12 @@ void body_irled(SharedVariable* sv) {
 
 
 void body_linefollow(SharedVariable* sv){
-			int rotated_left = 0;
-			int rotated_right = 1;
+	int rotated_left = 0;
+	int rotated_right = 1;
 	while(!sv->init_start);
 	printf("After Init_start\n");
 	while(!sv->manual_stop)
 	{	
-	//	sv->drive_state = DRIVE_FORWARD;
 	 
 	 if (sv->obstacle_detected == 1 && sv->next_lane_obstacle_detected == 0) {
 		sv->drive_state = OBSTACLE_DETECTED;	
@@ -144,16 +144,26 @@ void body_linefollow(SharedVariable* sv){
 	 } else if((!sv->front_led)){
 	        sv->drive_state = DRIVE_FORWARD;
 	        }
-	  else{	
-	        if(turn == 1){
+	  else{
+		// RED
+		if (digitalRead(COLOR_DET0) == 1 && digitalRead(COLOR_DET1) == 0) {
+			printf("RED\n");
+			//Wait till GREEN
+			while (!(digitalRead(COLOR_DET0) == 0 && digitalRead(COLOR_DET1) == 1)) {
+			stop(sv);
+			delay(100);
+			}
+		}
+		
+	        if(sv->turn == 1){
 	        sv->drive_state = TURN_RIGHT;
-	        printf("turn right set\n");
+	        printf("sv->turn right set\n");
 	        stop(sv);
 	        }
-	        else if(turn == 2)
+	        else if(sv->turn == 2)
 	        sv->drive_state = TURN_LEFT;
 	        
-	        //turn = 0;		
+	        //sv->turn = 0;		
 	  }
 		  	
 	  switch(sv->drive_state){
@@ -190,7 +200,7 @@ void body_keypress(SharedVariable* sv)
 
 // Initialize Irobot
  	create_init(sv);
-	printf("press aaa\n");
+/*	printf("press aaa\n");
  while (!(x == 'a' && y == 'a' && z == 'a')) { // 3 times ESC
 	sv->init_start = 0;
 	
@@ -201,7 +211,7 @@ void body_keypress(SharedVariable* sv)
 	printf("pressed aaa\n");
 
  sv->init_start =1;
-
+*/
   while (1) {
 	x = getch();
 	y = getch();
@@ -229,23 +239,19 @@ void drive_forward(SharedVariable* sv)
 	if(sv->right_led) //right is off implies both scenarios where left and right both are off
 	{
 		
-	//	while (sv->right_led){		
 			left(sv);
 			delay(200);
 			forward(sv);
 			delay(300);
-	//	}
 		right(sv);
 		delay(130);
 	}
 	if(sv->left_led) 
 	{
-	//	while(sv->left_led){		
 			right(sv);
 			delay(200);
 			forward(sv);
 			delay(300);
-	//	}
 		left(sv);
 		delay(80);
 			
@@ -265,7 +271,7 @@ void turn_right(SharedVariable* sv)
 
 		if (left_flag == 1 && right_flag == 1)
 			while (sv->left_led == 1 || sv->right_led == 1) 
-				forward();
+				forward(sv);
 		else if (left_flag == 1){
 		while (sv->left_led == 1)
 			forward(sv);
@@ -274,48 +280,26 @@ void turn_right(SharedVariable* sv)
 			forward(sv);
 		}
 
-		//while (left_flag == 1 && sv->left_led != 1) 
-		//	forward(sv);
-	
-		//while (right_flag == 1 && sv->right_led != 1) 
-		//	forward(sv);
-
-		//while (sv->right_led == 1)
-		//	forward(sv); 
-
-		//while (sv->left_led == 1)
-		//	forward(sv);
-
-	
-		//printf("Start Drive Forward 1\n");
-		//while(sv->front_led != 1)
-		//drive_forward(sv);
 
 			printf("After Forward0\n");
 		forward(sv);
-		delay(3000);
+		delay_custom(sv,3000);
 			
 			printf("After Forward2\n");
 			right(sv);
-			delay(1570);
+			delay_custom(sv,1400);
 			printf("After right\n");
 			forward(sv);
 
 			if (sv->current_lane == 1) {
-				delay(4000);
+				delay_custom(sv,4000);
 			} else {
-				delay(7000);
+				delay_custom(sv,7000);
 			}
 
+			sv->turn_count++;
+			turn_update(sv, (sv->turn_count - 1), (sv->turn_count));
 
-			//while(sv->right_led != 1 && sv->front_led != 1) 
-			//	forward(sv);
-			//printf("Affter forward 3\n");
-			//if (sv->front_led == 1) {
-			//	while (sv->right_led != 1) 
-			//		left(sv);
-			//}
-			//delay(200);
 }
 
 void turn_left(SharedVariable* sv)
@@ -323,73 +307,33 @@ void turn_left(SharedVariable* sv)
 	printf("Eneterd Turn Left");
 	int left_flag = 0; 
 	int right_flag = 0; 
-	//	if(sv->left_led == 0)
-	//		left_flag = 1;
-	//	if (sv->right_led == 0) 
-	//		right_flag = 1;
-
-	//	if (left_flag == 1 && right_flag == 1)
-	//		while (sv->left_led == 1 || sv->right_led == 1) 
-	//			forward(sv);
-	//	else if (left_flag == 1){
-	//	while (sv->left_led == 1)
-	//		forward(sv);
-	//	} else if (right_flag == 1) {
-	//	while (sv->right_led == 1)
-	//		forward(sv);
-	//	}
-
-	//	while (left_flag == 1 && sv->left_led != 1) 
-	//		forward(sv);
-	//
-	//	while (right_flag == 1 && sv->right_led != 1) 
-	//		forward(sv);
-
-	//	while (sv->right_led == 1)
-	//		forward(sv); 
-
-	//	while (sv->left_led == 1)
-	//		forward(sv);
-
-	
-		//printf("Start Drive Forward 1\n");
-		//while(sv->front_led != 1)
-		//drive_forward(sv);
-
 			printf("After Forward0\n");
 
 		int i;
 
 		for (i=0; i<3; i++) {
 		forward(sv);
-		delay(2000);
+		delay_custom(sv,2000);
 		right(sv);
-		delay(80);
+		delay_custom(sv,105);
 		} 
 		forward(sv);
-		delay(2000);
+		delay_custom(sv,2000);
 			
 			printf("After Forward2\n");
 			left(sv);
-			delay(1300);
+			delay_custom(sv,1200);
 			printf("After left\n");
 			forward(sv);
 			
 			if (sv->current_lane == 0) {
-				delay(3000);
+				delay_custom(sv,3000);
 			} else {
-				delay(6000);
+				delay_custom(sv,6000);
 			}
 
-
-			//while(sv->right_led != 1 && sv->front_led != 1) 
-			//	forward(sv);
-			//printf("Affter forward 3\n");
-			//if (sv->front_led == 1) {
-			//	while (sv->right_led != 1) 
-			//		left(sv);
-			//}
-			//delay(200);
+			sv->turn_count++;
+			turn_update(sv, (sv->turn_count - 1), (sv->turn_count));
 }
 
 void lane_change(SharedVariable* sv)
@@ -429,4 +373,70 @@ void stop_wait(SharedVariable* sv)
 {
 	while(sv->obstacle_detected == 1 && sv->next_lane_obstacle_detected == 1)
 		stop(sv);
+}
+
+void turn_update(SharedVariable* sv, int first, int second)
+{
+	if(sv->directions[first]==0 || sv->directions[second] == 0)
+	        sv->turn = 0;
+
+	else if(sv->directions[first] == 'B' && sv->directions[second] =='C')
+		sv->turn = 0;
+	else if(sv->directions[first] == 'B'&& sv->directions[second] == 'D')
+		sv->turn = 2;
+
+	else if(sv->directions[first] == 'C'&& sv->directions[second] == 'B')
+		sv->turn = 0;
+	else if(sv->directions[first] == 'C'&& sv->directions[second] == 'D')
+		sv->turn = 1;
+	else if(sv->directions[first] == 'D'&& sv->directions[second] == 'C')
+		sv->turn = 2;
+	else if(sv->directions[first] == 'D'&& sv->directions[second] == 'B')
+		sv->turn = 1;
+}
+
+void delay_custom(SharedVariable* sv, int delay_val) {
+
+	int current_dir = sv->current_direction;
+	if (delay_val <= 300) {
+		delay(delay_val);
+	} else {
+		while (delay_val > 0) {
+		while (sv->obstacle_detected == 1 || sv->next_lane_obstacle_detected == 1) 
+			stop(sv);
+		create_init(sv);
+		switch(current_dir) {
+		case STOP: stop(sv); break; 
+		case FORWARD: forward(sv); break; 
+		case REVERSE: reverse(sv); break; 
+		case LEFT: left(sv); break; 
+		case RIGHT: right(sv); break; 
+		}
+		printf("Before Delay");
+		delay(300);
+		printf("After Delay");
+		delay_val -= 300;
+		}			
+	}	
+}
+
+void uturn(SharedVariable* sv) {
+printf("Starting UTURN\n");
+
+	if (sv->current_lane == 1) {
+		left(sv);
+		delay(1300);
+		forward(sv);
+		delay(2500);	
+		left(sv);
+		delay(1300);
+	} else {
+		right(sv);
+		delay(1300);
+		forward(sv);
+		delay(2500);	
+		right(sv);
+		delay(1300);
+	}
+uturn_done = 1;
 }

@@ -22,7 +22,7 @@ thread_decl(ultrasound)
 thread_decl(irled)
 thread_decl(linefollow)
 thread_decl(keypress)
-
+thread_decl(socket)
 
 #define thread_create(NAME) pthread_create(&t_##NAME, NULL, thread_##NAME, &v);
 #define thread_join(NAME) pthread_join(t_##NAME, NULL);
@@ -39,14 +39,16 @@ int main(int argc, char* argv[]) {
 	init_shared_variable(&v);
 	init_sensors(&v);
 
-	pthread_t t_ultrasound, t_irled, t_linefollow,t_keypress;
+	pthread_t t_ultrasound, t_irled, t_linefollow,t_keypress,t_socket;
 			  
 		// Create sensing threads
 		thread_create(ultrasound);
 		thread_create(irled);
 		thread_create(linefollow);
 		thread_create(keypress);		
+		thread_create(socket);		
 		// Wait until all threads finish
+		thread_join(socket);
 		thread_join(ultrasound);
 		thread_join(irled);
 		thread_join(linefollow);	
